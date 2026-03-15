@@ -28,3 +28,7 @@ python3 -m http.server 8000
 ## Requirements
 
 A modern browser with File System Access API support (Chrome, Edge, Safari 15.2+).
+
+## Disclaimer
+
+Claude coded using Opus 4.6
