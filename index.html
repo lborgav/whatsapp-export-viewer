@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Chat Viewer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<button id="theme-toggle" title="Toggle theme">&#9790;</button>
+
+<div id="landing">
+  <div class="landing-card">
+    <h1>WhatsApp Chat Viewer</h1>
+    <p>View exported WhatsApp conversations with images, videos, and audio — entirely in your browser.</p>
+    <ol>
+      <li>Open WhatsApp &rarr; Chat &rarr; Export Chat (with media)</li>
+      <li>Unzip the exported archive</li>
+      <li>Click below and select the unzipped folder</li>
+    </ol>
+    <label class="folder-btn" for="folder-input">Select Chat Folder</label>
+    <input type="file" id="folder-input" webkitdirectory directory multiple>
+  </div>
+</div>
+
+<div id="chat-view">
+  <div id="chat-header">
+    <button class="back-btn" title="Back">&larr;</button>
+    <span id="chat-name">Chat</span>
+    <div id="search-box">
+      <input type="text" id="search-input" placeholder="Search messages..." autocomplete="off">
+      <button id="search-clear" title="Clear">&times;</button>
+      <span id="search-count"></span>
+      <button id="search-prev" title="Previous">&uarr;</button>
+      <button id="search-next" title="Next">&darr;</button>
+    </div>
+  </div>
+  <div id="messages"></div>
+</div>
+
+<div id="lightbox"><img src="" alt=""></div>
+<button id="scroll-bottom">&#8595;</button>
+
+<script src="app.js"></script>
+</body>
+</html>
