@@ -28,6 +28,15 @@
   <div id="chat-header">
     <button class="back-btn" title="Back">&larr;</button>
     <span id="chat-name">Chat</span>
+    <div id="view-switcher">
+      <button id="view-switcher-btn">All Messages <span class="arrow">&#9662;</span></button>
+      <div class="dropdown-menu">
+        <button class="dropdown-item active" data-view="all">All Messages</button>
+        <button class="dropdown-item" data-view="media">Media</button>
+        <button class="dropdown-item" data-view="links">Links</button>
+        <button class="dropdown-item" data-view="docs">Documents</button>
+      </div>
+    </div>
     <div id="search-box">
       <input type="text" id="search-input" placeholder="Search messages..." autocomplete="off">
       <button id="search-clear" title="Clear">&times;</button>

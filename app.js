@@ -18,6 +18,11 @@
   const MEDIA_ATTACH_RE = /<attached:\s*(.+?)>/i;
   const MEDIA_FILE_RE = /^(.+?)\s*\(file attached\)$/i;
   const OMITTED_RE = /\[(image|video|audio|sticker|document|GIF) omitted\]/i;
+  const LINK_RE = /(https?:\/\/[^\s<]+)/g;
+
+  // ── View State ───────────────────────────────────────────────────────
+  let chatData = null;
+  let currentView = 'all';
 
   // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -265,6 +270,174 @@
     return el;
   }
 
+  // ── Data Extraction ───────────────────────────────────────────────
+
+  function extractLinks(messages) {
+    const results = [];
+    for (const msg of messages) {
+      if (!msg.sender || !msg.content) continue;
+      const urls = msg.content.match(LINK_RE);
+      if (!urls) continue;
+      for (const url of urls) {
+        results.push({
+          url,
+          sender: msg.sender,
+          date: msg.date,
+          time: msg.time,
+          context: msg.content.length > 200 ? msg.content.slice(0, 200) + '...' : msg.content,
+        });
+      }
+    }
+    return results;
+  }
+
+  function collectMedia(messages) {
+    return messages.filter(m => m.media && ['image', 'video', 'audio', 'sticker'].includes(m.media.type));
+  }
+
+  function collectDocs(messages) {
+    return messages.filter(m => m.media && m.media.type === 'file');
+  }
+
+  // ── View Renderers ──────────────────────────────────────────────────
+
+  function renderMediaView(data, onImageClick) {
+    const items = collectMedia(data.messages);
+    const container = document.createElement('div');
+
+    if (!items.length) {
+      container.innerHTML = '<div class="view-empty">No media found in this chat.</div>';
+      return container;
+    }
+
+    const images = items.filter(m => m.media.type === 'image' || m.media.type === 'sticker');
+    const videos = items.filter(m => m.media.type === 'video');
+    const audios = items.filter(m => m.media.type === 'audio');
+
+    if (images.length || videos.length) {
+      const grid = document.createElement('div');
+      grid.className = 'media-grid';
+      for (const msg of images) {
+        const cell = document.createElement('div');
+        cell.className = 'media-grid-item';
+        const img = document.createElement('img');
+        img.src = msg.media.blobUrl;
+        img.alt = msg.media.filename;
+        img.loading = 'lazy';
+        img.addEventListener('click', () => onImageClick(msg.media.blobUrl));
+        cell.appendChild(img);
+        grid.appendChild(cell);
+      }
+      for (const msg of videos) {
+        const cell = document.createElement('div');
+        cell.className = 'media-grid-item';
+        const vid = document.createElement('video');
+        vid.src = msg.media.blobUrl;
+        vid.controls = true;
+        vid.preload = 'metadata';
+        cell.appendChild(vid);
+        grid.appendChild(cell);
+      }
+      container.appendChild(grid);
+    }
+
+    if (audios.length) {
+      const section = document.createElement('div');
+      section.className = 'audio-list';
+      for (const msg of audios) {
+        const card = document.createElement('div');
+        card.className = 'audio-card';
+        const aud = document.createElement('audio');
+        aud.src = msg.media.blobUrl;
+        aud.controls = true;
+        aud.preload = 'metadata';
+        card.appendChild(aud);
+        const meta = document.createElement('div');
+        meta.className = 'card-meta';
+        meta.textContent = (msg.sender || 'Unknown') + ' · ' + msg.date + ' ' + msg.time;
+        card.appendChild(meta);
+        section.appendChild(card);
+      }
+      container.appendChild(section);
+    }
+
+    return container;
+  }
+
+  function renderLinksView(data) {
+    const links = extractLinks(data.messages);
+    const container = document.createElement('div');
+    container.className = 'links-list';
+
+    if (!links.length) {
+      container.innerHTML = '<div class="view-empty">No links found in this chat.</div>';
+      return container;
+    }
+
+    for (const link of links) {
+      const card = document.createElement('div');
+      card.className = 'link-card';
+      const a = document.createElement('a');
+      a.href = link.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.className = 'link-url';
+      a.textContent = link.url;
+      card.appendChild(a);
+      const ctx = document.createElement('div');
+      ctx.className = 'link-context';
+      ctx.textContent = link.context;
+      card.appendChild(ctx);
+      const meta = document.createElement('div');
+      meta.className = 'card-meta';
+      meta.textContent = link.sender + ' · ' + link.date + ' ' + link.time;
+      card.appendChild(meta);
+      container.appendChild(card);
+    }
+
+    return container;
+  }
+
+  function renderDocsView(data) {
+    const docs = collectDocs(data.messages);
+    const container = document.createElement('div');
+    container.className = 'docs-list';
+
+    if (!docs.length) {
+      container.innerHTML = '<div class="view-empty">No documents found in this chat.</div>';
+      return container;
+    }
+
+    for (const msg of docs) {
+      const card = document.createElement('div');
+      card.className = 'doc-card';
+      const icon = document.createElement('span');
+      icon.className = 'doc-icon';
+      icon.textContent = '\uD83D\uDCC4';
+      card.appendChild(icon);
+      const info = document.createElement('div');
+      info.className = 'doc-info';
+      const name = document.createElement('div');
+      name.className = 'doc-name';
+      name.textContent = msg.media.filename;
+      info.appendChild(name);
+      const meta = document.createElement('div');
+      meta.className = 'card-meta';
+      meta.textContent = (msg.sender || 'Unknown') + ' · ' + msg.date + ' ' + msg.time;
+      info.appendChild(meta);
+      card.appendChild(info);
+      const dl = document.createElement('a');
+      dl.href = msg.media.blobUrl;
+      dl.download = msg.media.filename;
+      dl.className = 'doc-download';
+      dl.textContent = 'Download';
+      card.appendChild(dl);
+      container.appendChild(card);
+    }
+
+    return container;
+  }
+
   // ── Header ─────────────────────────────────────────────────────────────
 
   function resolveHeaderName(data) {
@@ -316,11 +489,69 @@
   function initNavigation() {
     document.querySelector('#chat-header .back-btn').addEventListener('click', () => {
       document.getElementById('chat-view').classList.remove('active');
+      document.getElementById('chat-view').removeAttribute('data-view');
       document.getElementById('landing').style.display = 'flex';
       document.getElementById('messages').innerHTML = '';
       document.getElementById('folder-input').value = '';
       document.getElementById('search-box').classList.remove('active');
+      chatData = null;
+      currentView = 'all';
+      const btn = document.getElementById('view-switcher-btn');
+      btn.innerHTML = 'All Messages <span class="arrow">&#9662;</span>';
+      document.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
+      document.querySelector('.dropdown-item[data-view="all"]').classList.add('active');
     });
+  }
+
+  function switchView(view, openLightbox) {
+    currentView = view;
+    const chatView = document.getElementById('chat-view');
+    chatView.setAttribute('data-view', view);
+
+    const btn = document.getElementById('view-switcher-btn');
+    const labels = { all: 'All Messages', media: 'Media', links: 'Links', docs: 'Documents' };
+    btn.innerHTML = escapeHtml(labels[view]) + ' <span class="arrow">&#9662;</span>';
+
+    document.querySelectorAll('.dropdown-item').forEach(i => {
+      i.classList.toggle('active', i.dataset.view === view);
+    });
+
+    const container = document.getElementById('messages');
+    container.innerHTML = '';
+    container.scrollTop = 0;
+
+    if (!chatData) return;
+
+    if (view === 'all') {
+      container.appendChild(renderChat(chatData, openLightbox));
+      container.scrollTop = container.scrollHeight;
+    } else if (view === 'media') {
+      container.appendChild(renderMediaView(chatData, openLightbox));
+    } else if (view === 'links') {
+      container.appendChild(renderLinksView(chatData));
+    } else if (view === 'docs') {
+      container.appendChild(renderDocsView(chatData));
+    }
+  }
+
+  function initViewSwitcher(openLightbox) {
+    const btn = document.getElementById('view-switcher-btn');
+    const menu = btn.nextElementSibling;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.classList.toggle('open');
+    });
+
+    menu.addEventListener('click', (e) => {
+      const item = e.target.closest('.dropdown-item');
+      if (!item) return;
+      const view = item.dataset.view;
+      menu.classList.remove('open');
+      if (view !== currentView) switchView(view, openLightbox);
+    });
+
+    document.addEventListener('click', () => menu.classList.remove('open'));
   }
 
   function initSearch() {
@@ -468,6 +699,7 @@
   initNavigation();
   initSearch();
   const openLightbox = initLightbox();
+  initViewSwitcher(openLightbox);
 
   document.getElementById('folder-input').addEventListener('change', async (e) => {
     const files = Array.from(e.target.files);
@@ -486,17 +718,15 @@
     }
 
     data.folderName = extractFolderName(files);
+    chatData = data;
 
     // Show chat view
     document.getElementById('landing').style.display = 'none';
     document.getElementById('chat-view').classList.add('active');
     document.getElementById('chat-name').textContent = resolveHeaderName(data);
 
-    const container = document.getElementById('messages');
-    container.appendChild(renderChat(data, openLightbox));
-    container.scrollTop = container.scrollHeight;
-
-    initScrollButton(container);
+    switchView('all', openLightbox);
+    initScrollButton(document.getElementById('messages'));
   });
 
 })();
