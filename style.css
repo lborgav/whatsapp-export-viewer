@@ -476,6 +476,66 @@ body {
   border-radius: 4px;
 }
 
+/* Sender Picker Modal */
+#sender-picker {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+}
+
+#sender-picker.active { display: flex; }
+
+.sender-picker-card {
+  background: var(--landing-card);
+  border-radius: 12px;
+  padding: 36px 32px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.sender-picker-card h2 {
+  font-size: 20px;
+  color: var(--header-bg);
+  margin-bottom: 8px;
+}
+
+.dark-theme .sender-picker-card h2 { color: #00a884; }
+
+.sender-picker-card p {
+  color: var(--landing-text);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+#sender-picker-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#sender-picker-options button {
+  display: block;
+  width: 100%;
+  background: #00a884;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#sender-picker-options button:hover { background: #008f72; }
+
 /* Scroll-to-bottom */
 #scroll-bottom {
   display: none;

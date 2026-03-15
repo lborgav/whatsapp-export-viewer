@@ -114,15 +114,13 @@
     }
 
     const senders = [...new Set(messages.filter(m => m.sender).map(m => m.sender))];
-    const me = senders.length >= 2 ? senders[1] : senders[0] || null;
 
     for (const msg of messages) {
-      msg.isMe = msg.sender === me;
       msg.isSystem = !msg.sender;
       resolveMedia(msg, mediaMap);
     }
 
-    return { messages, senders, me, isGroup: senders.length > 2 };
+    return { messages, senders, me: null, isGroup: senders.length >= 2 };
   }
 
   function resolveMedia(msg, mediaMap) {
@@ -148,6 +146,35 @@
 
     const omitMatch = OMITTED_RE.exec(msg.content);
     if (omitMatch) msg.omitted = omitMatch[0];
+  }
+
+  // ── Sender Identity ──────────────────────────────────────────────────
+
+  function applyMe(data, me) {
+    data.me = me;
+    for (const msg of data.messages) {
+      msg.isMe = msg.sender === me;
+    }
+  }
+
+  function showSenderPicker(senders) {
+    return new Promise((resolve) => {
+      const overlay = document.getElementById('sender-picker');
+      const options = document.getElementById('sender-picker-options');
+      options.innerHTML = '';
+
+      for (const name of senders) {
+        const btn = document.createElement('button');
+        btn.textContent = name;
+        btn.addEventListener('click', () => {
+          overlay.classList.remove('active');
+          resolve(name);
+        });
+        options.appendChild(btn);
+      }
+
+      overlay.classList.add('active');
+    });
   }
 
   // ── Renderer ───────────────────────────────────────────────────────────
@@ -718,6 +745,14 @@
     }
 
     data.folderName = extractFolderName(files);
+
+    if (data.senders.length >= 2) {
+      const me = await showSenderPicker(data.senders);
+      applyMe(data, me);
+    } else if (data.senders.length === 1) {
+      applyMe(data, data.senders[0]);
+    }
+
     chatData = data;
 
     // Show chat view
