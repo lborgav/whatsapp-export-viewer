@@ -19,6 +19,7 @@ python3 -m http.server 8000
 ## Features
 
 - Images, videos, audio, and stickers
+- View switcher: All Messages, Media grid, Links list, Documents list
 - Full-text search (Ctrl/Cmd+F)
 - Light/dark theme
 - Bold, italic, strikethrough, inline code, and clickable links
