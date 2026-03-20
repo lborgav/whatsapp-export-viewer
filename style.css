@@ -445,6 +445,40 @@ body {
 .bubble video { max-height: 300px; }
 .bubble audio { display: block; margin: 6px 0; max-width: 100%; }
 
+/* Document link in chat bubbles */
+.bubble .doc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.05);
+  color: #027eb5;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin: 4px 0;
+  word-break: break-all;
+}
+
+.bubble .doc-link::before {
+  content: '\1F4C4';
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.bubble .doc-link:hover {
+  background: rgba(0,0,0,0.1);
+}
+
+.dark-theme .bubble .doc-link {
+  background: rgba(255,255,255,0.08);
+  color: #53bdeb;
+}
+
+.dark-theme .bubble .doc-link:hover {
+  background: rgba(255,255,255,0.14);
+}
+
 .bubble .media-placeholder {
   display: inline-block;
   background: rgba(0,0,0,0.05);

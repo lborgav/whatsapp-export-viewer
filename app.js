@@ -15,7 +15,7 @@
   };
 
   const MSG_RE = /^\u200e?\[?(\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}),?\s+(\d{1,2}[.:]\d{2}(?:[.:]\d{2})?(?:\s*[APap][Mm])?)\]?\s*[-–]?\s*(.+)$/;
-  const MEDIA_ATTACH_RE = /<attached:\s*(.+?)>/i;
+  const MEDIA_ATTACH_RE = /<(?:attached|anexado|adjunto):\s*(.+?)>/i;
   const MEDIA_FILE_RE = /^(.+?)\s*\(file attached\)$/i;
   const OMITTED_RE = /\[(image|video|audio|sticker|document|GIF) omitted\]/i;
   const LINK_RE = /(https?:\/\/[^\s<]+)/g;
@@ -123,10 +123,23 @@
     return { messages, senders, me: null, isGroup: senders.length >= 2 };
   }
 
+  function stripInvisible(s) {
+    return s.replace(/[\u200E\u200F\u200B\u200C\u200D\u2066\u2067\u2068\u2069\uFEFF]/g, '');
+  }
+
   function resolveMedia(msg, mediaMap) {
-    const attachMatch = MEDIA_ATTACH_RE.exec(msg.content);
-    const fileMatch = MEDIA_FILE_RE.exec(msg.content);
-    const mediaRef = (attachMatch?.[1] || fileMatch?.[1] || '').trim();
+    const clean = stripInvisible(msg.content);
+    const attachMatch = MEDIA_ATTACH_RE.exec(clean);
+    const fileMatch = MEDIA_FILE_RE.exec(clean);
+    let mediaRef = (attachMatch?.[1] || fileMatch?.[1] || '').trim();
+
+    // When the attachment marker has an empty filename (e.g. <anexado: >),
+    // extract the filename from the preceding text: "file.pdf • metadata <marker>"
+    if (attachMatch && !mediaRef) {
+      const prefix = clean.slice(0, attachMatch.index);
+      const fnMatch = /([^\s]+\.\w+)\s*[•·]/.exec(prefix);
+      if (fnMatch) mediaRef = fnMatch[1];
+    }
 
     if (mediaRef && mediaMap.has(mediaRef)) {
       msg.media = { ...mediaMap.get(mediaRef), filename: mediaRef };
@@ -134,18 +147,29 @@
       return;
     }
 
+    // Fallback: search mediaMap keys in cleaned content
     if (!mediaRef) {
       for (const [key, val] of mediaMap) {
-        if (msg.content.includes(key)) {
+        if (clean.includes(key)) {
           msg.media = { ...val, filename: key };
-          msg.content = msg.content.replace(key, '').trim();
+          msg.content = '';
           return;
         }
       }
     }
 
-    const omitMatch = OMITTED_RE.exec(msg.content);
-    if (omitMatch) msg.omitted = omitMatch[0];
+    const omitMatch = OMITTED_RE.exec(clean);
+    if (omitMatch) {
+      msg.omitted = omitMatch[0];
+      return;
+    }
+
+    // Clean up unresolved attachment text so raw metadata isn't shown
+    if (attachMatch) {
+      const prefix = clean.slice(0, attachMatch.index);
+      const fnMatch = /([^\s]+\.\w+)/.exec(prefix);
+      msg.content = fnMatch ? fnMatch[1] : clean.replace(MEDIA_ATTACH_RE, '').replace(/\s*[•·].*$/, '').trim();
+    }
   }
 
   // ── Sender Identity ──────────────────────────────────────────────────
@@ -282,6 +306,14 @@
       vid.controls = true;
       vid.preload = 'metadata';
       return vid;
+    }
+    if (media.type === 'file') {
+      const link = document.createElement('a');
+      link.href = media.blobUrl;
+      link.download = media.filename;
+      link.className = 'doc-link';
+      link.textContent = media.filename;
+      return link;
     }
     const aud = document.createElement('audio');
     aud.src = media.blobUrl;
