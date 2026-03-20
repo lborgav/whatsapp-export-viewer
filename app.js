@@ -344,14 +344,16 @@
     if (images.length || videos.length) {
       const grid = document.createElement('div');
       grid.className = 'media-grid';
-      for (const msg of images) {
+      const imageUrls = images.map(m => m.media.blobUrl);
+      for (let i = 0; i < images.length; i++) {
+        const msg = images[i];
         const cell = document.createElement('div');
         cell.className = 'media-grid-item';
         const img = document.createElement('img');
         img.src = msg.media.blobUrl;
         img.alt = msg.media.filename;
         img.loading = 'lazy';
-        img.addEventListener('click', () => onImageClick(msg.media.blobUrl));
+        img.addEventListener('click', () => onImageClick(msg.media.blobUrl, imageUrls, i));
         cell.appendChild(img);
         grid.appendChild(cell);
       }
@@ -494,12 +496,27 @@
   function initLightbox() {
     const overlay = document.getElementById('lightbox');
     const img = overlay.querySelector('img');
+    let items = [], idx = 0;
 
-    const open = (src) => { img.src = src; overlay.classList.add('active'); };
-    const close = () => overlay.classList.remove('active');
+    const show = (src) => { img.src = src; overlay.classList.add('active'); overlay.focus(); };
+    const close = () => { overlay.classList.remove('active'); };
+
+    const open = (src, list, i) => {
+      items = list || [];
+      idx = (i !== undefined) ? i : -1;
+      show(src);
+    };
 
     overlay.addEventListener('click', close);
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.addEventListener('keydown', (e) => {
+      if (!overlay.classList.contains('active')) return;
+      if (e.key === 'Escape') { close(); return; }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (e.key === 'ArrowRight' && idx < items.length - 1) { idx++; show(items[idx]); }
+        if (e.key === 'ArrowLeft'  && idx > 0)               { idx--; show(items[idx]); }
+      }
+    });
 
     return open;
   }
@@ -727,6 +744,19 @@
   initSearch();
   const openLightbox = initLightbox();
   initViewSwitcher(openLightbox);
+
+  // Arrow-key browsing from media grid (opens lightbox on first press)
+  document.addEventListener('keydown', (e) => {
+    if (currentView !== 'media') return;
+    if (document.getElementById('lightbox').classList.contains('active')) return;
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const imgs = Array.from(document.querySelectorAll('.media-grid img'));
+    if (!imgs.length) return;
+    e.preventDefault();
+    const urls = imgs.map(i => i.src);
+    const idx = e.key === 'ArrowRight' ? 0 : urls.length - 1;
+    openLightbox(urls[idx], urls, idx);
+  });
 
   document.getElementById('folder-input').addEventListener('change', async (e) => {
     const files = Array.from(e.target.files);
