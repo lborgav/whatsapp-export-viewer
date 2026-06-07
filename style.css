@@ -1,82 +1,46 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #D4D4D4;
+  --bg: #efeae2;
   --bg-pattern: rgba(0,0,0,0.06);
-  --header-bg: #494848;
-  --header-text: #D4D4D4;
-  --bubble-me: #B4B4B4;
+  --header-bg: #075e54;
+  --header-text: #fff;
+  --bubble-me: #d9fdd3;
   --bubble-other: #fff;
-  --bubble-me-text: #494848;
-  --bubble-other-text: #494848;
-  --system-bg: rgba(255,255,255,0.9);
-  --system-text: #636363;
+  --bubble-me-text: #111;
+  --bubble-other-text: #111;
+  --system-bg: rgba(255,255,230,0.9);
+  --system-text: #54656f;
   --date-bg: rgba(255,255,255,0.9);
-  --date-text: #636363;
-  --time-text: #909090;
+  --date-text: #54656f;
+  --time-text: #667781;
   --sender-border: rgba(0,0,0,0.05);
-  --landing-bg: #F5F5F5;
+  --landing-bg: #f0f2f5;
   --landing-card: #fff;
-  --landing-text: #636363;
-  --lightbox-bg: rgba(73,72,72,0.95);
-  --scroll-btn-bg: rgba(73,72,72,0.6);
-  --accent: #494848;
-  --accent-hover: #636363;
+  --landing-text: #41525d;
+  --lightbox-bg: rgba(0,0,0,0.9);
+  --scroll-btn-bg: rgba(0,0,0,0.4);
 }
 
 .dark-theme {
-  --bg: #494848;
+  --bg: #0b141a;
   --bg-pattern: rgba(255,255,255,0.02);
-  --header-bg: #494848;
-  --header-text: #D4D4D4;
-  --bubble-me: #636363;
-  --bubble-other: #909090;
-  --bubble-me-text: #fff;
-  --bubble-other-text: #fff;
-  --system-bg: rgba(99,99,99,0.9);
-  --system-text: #D4D4D4;
-  --date-bg: rgba(99,99,99,0.9);
-  --date-text: #D4D4D4;
-  --time-text: rgba(255,255,255,0.55);
+  --header-bg: #1f2c34;
+  --header-text: #e9edef;
+  --bubble-me: #005c4b;
+  --bubble-other: #202c33;
+  --bubble-me-text: #e9edef;
+  --bubble-other-text: #e9edef;
+  --system-bg: rgba(31,44,52,0.9);
+  --system-text: #8696a0;
+  --date-bg: rgba(31,44,52,0.9);
+  --date-text: #8696a0;
+  --time-text: rgba(255,255,255,0.45);
   --sender-border: rgba(255,255,255,0.05);
-  --landing-bg: #494848;
-  --landing-card: #636363;
-  --landing-text: #D4D4D4;
-  --accent: #909090;
-  --accent-hover: #B4B4B4;
+  --landing-bg: #111b21;
+  --landing-card: #1f2c34;
+  --landing-text: #8696a0;
 }
-
-/* Tool header (back arrow + tool name) */
-#tool-header {
-  width: 100%;
-  background: #494848;
-  color: #D4D4D4;
-  padding: 0.75rem 1rem;
-  display: flex;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  border-bottom: 1px solid #636363;
-}
-#tool-header .tool-back {
-  color: #D4D4D4;
-  text-decoration: none;
-  font-size: 1.25rem;
-  line-height: 1;
-  width: 1.5rem;
-}
-#tool-header .tool-back:hover { color: #fff; }
-#tool-header .tool-title {
-  flex: 1;
-  text-align: center;
-  font-size: 0.85rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  color: #D4D4D4;
-  margin: 0;
-}
-#tool-header .tool-spacer { width: 1.5rem; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -110,7 +74,7 @@ body {
   margin-bottom: 12px;
 }
 
-.dark-theme .landing-card h1 { color: #494848; }
+.dark-theme .landing-card h1 { color: #00a884; }
 
 .landing-card p {
   color: var(--landing-text);
@@ -129,7 +93,7 @@ body {
 
 .folder-btn {
   display: inline-block;
-  background: #494848;
+  background: #00a884;
   color: #fff;
   border: none;
   padding: 12px 32px;
@@ -140,7 +104,7 @@ body {
   transition: background 0.15s;
 }
 
-.folder-btn:hover { background: #636363; }
+.folder-btn:hover { background: #008f72; }
 
 #folder-input { display: none; }
 
@@ -260,7 +224,7 @@ body {
 }
 
 .dropdown-item.active {
-  color: #494848;
+  color: #00a884;
   font-weight: 600;
 }
 
@@ -575,7 +539,7 @@ body {
   margin-bottom: 8px;
 }
 
-.dark-theme .sender-picker-card h2 { color: #494848; }
+.dark-theme .sender-picker-card h2 { color: #00a884; }
 
 .sender-picker-card p {
   color: var(--landing-text);
@@ -593,7 +557,7 @@ body {
 #sender-picker-options button {
   display: block;
   width: 100%;
-  background: #494848;
+  background: #00a884;
   color: #fff;
   border: none;
   padding: 12px 24px;
@@ -604,7 +568,7 @@ body {
   transition: background 0.15s;
 }
 
-#sender-picker-options button:hover { background: #636363; }
+#sender-picker-options button:hover { background: #008f72; }
 
 /* Scroll-to-bottom */
 #scroll-bottom {
@@ -746,7 +710,7 @@ body {
 }
 
 .doc-download {
-  background: #494848;
+  background: #00a884;
   color: #fff;
   text-decoration: none;
   padding: 6px 14px;
@@ -758,7 +722,7 @@ body {
 }
 
 .doc-download:hover {
-  background: #636363;
+  background: #008f72;
 }
 
 /* ── Shared card meta ────────────────────────────────────────────── */
